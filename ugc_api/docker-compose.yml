@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  ugc_api:
+    build:
+      context: .
+      dockerfile: ./compose/ugc_api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      KAFKA_TOPIK: "views"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      JWT_SECRET: "secret"
+      JWT_ALGORITHMS: "HS256"
+    extra_hosts:
+      kafka: 188.166.0.37
+    restart: always
