@@ -9,7 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      TEST_DIR: ugc_api/tests
+      TESTS_DIR: ugc_api/tests
+      DIR: ugc_api
     strategy:
       fail-fast: false
       matrix:
@@ -38,9 +39,9 @@ jobs:
 
       - name: Test with pytest
         run: |
-          if [ -d $DIR ];
+          if [ -d $TESTS_DIR ];
           then
-          pytest --html=pytest_report/report.html --self-contained-html --suppress-no-test-exit-code --suppress-tests-failed-exit-code $DIR
+          pytest --html=pytest_report/report.html --self-contained-html --suppress-no-test-exit-code --suppress-tests-failed-exit-code $TESTS_DIR
           fi
 
       - name: Archive reports
