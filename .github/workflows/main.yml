@@ -1,0 +1,78 @@
+name: Python multiple versions
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TESTS_DIR: ugc_api/tests
+      DIR: ugc_api
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8", "3.9"]
+
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 wemake-python-styleguide flake8-html mypy[reports] pytest pytest-html pytest-custom-exit-code
+          if [ -f $DIR/requirements.txt ]; then pip install -r $DIR/requirements.txt; fi
+
+      - name: Lint with flake8
+        run: flake8 --exit-zero .
+
+      - name: Type check with mypy
+        run: mypy .
+
+      - name: Test with pytest
+        run: |
+          if [ -d $TESTS_DIR ];
+          then
+          pytest --html=pytest_report/report.html --self-contained-html --suppress-no-test-exit-code --suppress-tests-failed-exit-code $TESTS_DIR
+          fi
+
+      - name: Archive reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports-python-${{ matrix.python-version }}
+          path: |
+            flake_report/
+            mypy_report/
+            pytest_report/
+
+  send_message:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: build
+    steps:
+      - name: send telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TG_CHAT }}
+          token: ${{ secrets.TG_TOKEN }}
+          message: |
+            ${{ github.actor }} сделал ${{ github.event_name }} в
+            репозиторий ${{ github.repository }}
+
+            Время: ${{ github.event.pull_request.created_at }}.
+
+            Заголовок: ${{ github.event.pull_request.title }}
+            Комментарий: ${{ github.event.pull_request.body }}
+
+            Ссылка на PR: ${{ github.event.pull_request.html_url }}
+
+            Детали gtihub actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
