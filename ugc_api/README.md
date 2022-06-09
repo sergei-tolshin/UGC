@@ -16,10 +16,10 @@
 ###  Запуск сервиса
 1. Запустите Kafka и MongoDB в docker контейнерах:
 ```bash
-$ docker-compose-kafka up
+$ docker-compose -f docker-compose-kafka.yml up
 ```
 ```bash
-$ docker-compose-mongodb up
+$ docker-compose -f docker-compose-mongodb.yml up
 ```
 Необходимо некоторое время для запуска контейнеров.
 2. Создайте необходимые топики в Kafka
