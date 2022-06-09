@@ -41,7 +41,6 @@ async def get_user_reviews_of_movies(
             status_code=status.HTTP_200_OK)
 async def get_review(
     review_id: str,
-    request: Request,
     service: ReviewsService = Depends(get_reviews_service)
 ):
     review = await service.get_details(review_id)
@@ -59,14 +58,14 @@ async def get_review(
              status_code=status.HTTP_201_CREATED)
 @login_required
 async def add_review(
-    user_id: str,
     movie_id: str,
     text: Text,
     request: Request,
     service: ReviewsService = Depends(get_reviews_service)
 ):
+    user_id = request.user.identity
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': user_id,
         'movie_id': movie_id
     }
     movie_review = await service.exist(data)
@@ -89,7 +88,6 @@ async def add_review(
               status_code=status.HTTP_200_OK)
 @login_required
 async def edit_review(
-    user_id: str,
     review_id: str,
     text: Text,
     request: Request,
@@ -105,7 +103,7 @@ async def edit_review(
 
     review = Review(**review)
 
-    if review.user_id != user_id:  # request.user.identity
+    if review.user_id != request.user.identity:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=_('Access denied'),
@@ -121,7 +119,6 @@ async def edit_review(
                status_code=status.HTTP_204_NO_CONTENT)
 @login_required
 async def delete_review(
-    user_id: str,
     review_id: str,
     request: Request,
     service: ReviewsService = Depends(get_reviews_service)
@@ -136,7 +133,7 @@ async def delete_review(
 
     review = Review(**review)
 
-    if review.user_id != user_id:  # request.user.identity
+    if review.user_id != request.user.identity:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=_('Access denied'),
@@ -152,14 +149,14 @@ async def delete_review(
              status_code=status.HTTP_200_OK)
 @login_required
 async def vote_for_review(
-    user_id: str,
     review_id: str,
     vote: Vote,
     request: Request,
     service: ReviewsVotesService = Depends(get_reviews_votes_service)
 ):
+    user_id = request.user.identity
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': user_id,
         'review_id': review_id
     }
     vote_review = await service.exist(data)

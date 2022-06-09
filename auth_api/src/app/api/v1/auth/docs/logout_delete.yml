@@ -1,0 +1,13 @@
+Выход пользователя
+---
+tags:
+  - auth
+security:
+  - Bearer: []
+responses:
+  200:
+    description: Access token revoked, session closed
+  401:
+    description: Missing Authorization Header
+  422:
+    description: Signature verification failed

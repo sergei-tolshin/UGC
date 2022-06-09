@@ -13,13 +13,12 @@ router = APIRouter()
             status_code=status.HTTP_202_ACCEPTED)
 @login_required
 async def get_progress(
-    user_id: str,
     movie_id: str,
     request: Request,
     service: ViewService = Depends(get_view_service)
 ):
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': request.user.identity,
         'movie_id': movie_id,
     }
     progress = await service.get_object_or_404(ViewProgress, data)
@@ -32,14 +31,14 @@ async def get_progress(
              status_code=status.HTTP_202_ACCEPTED)
 @login_required
 async def send_progress(
-    user_id: str,
     movie_id: str,
     progress: Progress,
     request: Request,
     service: ViewService = Depends(get_view_service)
 ):
+    user_id = request.user.identity
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': user_id,
         'movie_id': movie_id,
     }
     view_progress = await service.get_object_or_none(ViewProgress, data)
