@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import backoff
 import orjson
@@ -25,7 +26,7 @@ class KafkaProducer(AbstractProducer):
         return self
 
     def __init__(self):
-        self.producer: AIOKafkaProducer = None
+        self.producer: Optional[AIOKafkaProducer] = None
 
     @backoff.on_exception(backoff.expo, errors.KafkaError,
                           max_tries=5, raise_on_giveup=False)

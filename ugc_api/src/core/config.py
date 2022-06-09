@@ -15,7 +15,7 @@ KAFKA_HOST = os.getenv('KAFKA_HOST', '127.0.0.1')
 KAFKA_PORT = int(os.getenv('KAFKA_PORT', 9092))
 
 # Настройки MongoDB
-MONGODB_URL = os.getenv('MONGODB_URL', 'mongodb://localhost:27017/?authSource=ugc_db')
+MONGODB_URL = os.getenv('MONGODB_URL', '')
 MONGODB_DB = os.getenv('MONGODB_DB', 'ugc_db')
 if not MONGODB_URL:
     MONGODB_HOST = os.getenv('MONGODB_HOST', 'localhost')
@@ -39,4 +39,4 @@ JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'secret_key')
 JWT_ALGORITHM: str = os.getenv('JWT_ALGORITHM', 'HS256')
 
 # Sentry
-SENTRY_DSN = os.getenv('SENTRY_DSN', 'https://cd876fdfc3744d36b1507404a4e6cb55@o1281274.ingest.sentry.io/6487131')
+SENTRY_DSN = os.getenv('SENTRY_DSN', '')
