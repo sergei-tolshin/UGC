@@ -1,0 +1,56 @@
+@startuml
+!theme mars
+!include https://raw.githubusercontent.com/kirchsth/C4-PlantUML/extended/C4_Container.puml
+LAYOUT_LANDSCAPE()
+
+
+title Архитектура онлайн кинотеатра
+
+Person(Admin, "Администратор портала")
+Person(Customer, "Пользователь")
+
+System_Boundary(OnlineCinemaBackend, "Backend онлайн кинотеатра") {
+
+
+  Boundary(ETL, "ETL Service") {
+    System(ETLProcess, "ETL Process")
+  }
+
+  Boundary(AsyncAPIService, "Async API Service ") {
+    Container(AsyncAPI, "Async API", "FastAPI application")
+    ContainerDb(APICache, "Redis Cache", "Cache customer's requests")
+    ContainerDb(ElasticDB, "ElasticSearch container")
+  }
+  Boundary(AdminPanelBlock, "Admin Panel Service") {
+    ContainerDb(PostgreSQL, "Movies PostgreSQL")
+    Container(AdminPanelService, "Admin Panel Service", "Django application")
+  }
+
+  Boundary(AuthService, "Auth Service") {
+    Container(Auth, "Auth", "flask application")
+    ContainerDb(AuthRedisCache, "Redis Cache", "Stores refresh and inactive tokens")
+    ContainerDb(AuthDB, "Auth DB", "PostgreSQL", "Stores users, sessions,roles and permissions")
+    ContainerDb(OAuth, "OAuth2.0", "", "Registration and login via OAuth2.0")
+  }
+}
+
+'Взаимодействие администратора
+Rel_R(Admin, AdminPanelService, "Администратор управляет контентом")
+Rel(AdminPanelService, PostgreSQL, "Запись и обновление данных")
+
+
+'ETL процесс
+Rel_L(ETLProcess, PostgreSQL, "Получение нового/обновленного контента")
+Rel_L(ETLProcess, ElasticDB, "Запись данных о фильме")
+
+
+'Взаимодействие API с хранилищами
+Rel_U(Customer, AsyncAPI, "Запрос на контент")
+Rel_L(AsyncAPI, Auth, "Авторизация и аутентификация gRCP")
+Rel_R(AsyncAPI, APICache, "Получение/запись данных из(в) кеша")
+Rel_D(AsyncAPI, ElasticDB, "Получение данных из ElastecSearch")
+
+Rel_L(Auth, AuthDB, "Запись/получение данных о пользователе")
+Rel_D(Auth, AuthRedisCache, "Получение/запись данных из(в) кеша")
+Rel_L(Auth, OAuth, "Авторизация через сторонние сервисы")
+@enduml
