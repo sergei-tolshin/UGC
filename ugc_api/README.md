@@ -1,14 +1,46 @@
-# FastAPI web-producer for Kafka
+#  UGC API для онлайн-кинотеатра
 
-Тестовый post-запрос:
+### Описание
+
+Сервис для хранения пользовательского контента: лайки и оценки фильмов, рецензии к фильмам и избранные фильмы.
+
+### Технологии
+- Python 3.9
+- FastAPI
+- MongoDB
+- Kafka
+- gunicorn/uvicorn workers
+- Nginx
+- Docker, docker-compose
+
+###  Запуск сервиса
+1. Запустите Kafka и MongoDB в docker контейнерах:
+```bash
+$ docker-compose -f docker-compose-kafka.yml up
 ```
-curl -XPOST -H "Content-Type: application/json" -H "Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiZWQxOWJlYzktZTQ4Ni00ZTk5LThlOGMtODE4YjA0ODMxMDRkIn0.fX-PBxj0mGYAe774TRsEaVef_UN-lV1bYOgmjcz_ykA" -d '{"user_id":"ed19bec9-e486-4e99-8e8c-818b0483104d","movie_id":"d0893172-5503-428e-ae00-445dc70b1416","viewed_frame":"123","duration":"123","event_time":"123"}' http://localhost:8000/api/v1/views/
+```bash
+$ docker-compose -f docker-compose-mongodb.yml up
+```
+Необходимо некоторое время для запуска контейнеров.
+2. Создайте необходимые топики в Kafka
+3. Поднимите кластер MongoDB:
+```bash
+$ docker-compose exec -it mongos1 bash -c "mongo < /scripts/config_server.js"
+```
+```bash
+$ docker-compose exec -it mongos1 bash -c "mongo < /scripts/replica_1.js"
+```
+```bash
+$ docker-compose exec -it mongos1 bash -c "mongo < /scripts/replica_2.js"
+```
+```bash
+$ docker-compose exec -it mongos1 bash -c "mongo < /scripts/router.js"
+```
+5. Создайте базу данных и коллекции в MongoDB
+4. Запустите сервис UGC в docker контейнере:
+```bash
+$ docker-compose-ugc_api up --build
 ```
 
-Код для генерации тестового jwt:
-```
-import jwt
-
-encoded_jwt = jwt.encode({"user_id": "ed19bec9-e486-4e99-8e8c-818b0483104d"}, "secret", algorithm="HS256")
-print(encoded_jwt)
-```
+### Документация и доступные эндпоинты
+Благодаря встроенным возможностям FastAPI, будет автоматически создана документация по api. После запуска приложения посмотреть все доступные эндпоинты и протестировать его работу можно прямо в браузере. Для этого откройте страницу <http://0.0.0.0/api/openapi> или страницу <http://0.0.0.0/api/redoc>
