@@ -13,7 +13,6 @@ router = APIRouter()
             status_code=status.HTTP_200_OK)
 @login_required
 async def list_favorites(
-    user_id: str,
     request: Request,
     service: FavoritesService = Depends(get_favorite_service)
 ):
@@ -21,7 +20,7 @@ async def list_favorites(
         '_id': False,
         'movie_id': True
     }
-    favorites = await service.list({'user_id': user_id}, fields)
+    favorites = await service.list({'user_id': request.user.identity}, fields)
     return [_['movie_id'] for _ in favorites]
 
 
@@ -31,13 +30,12 @@ async def list_favorites(
              status_code=status.HTTP_201_CREATED)
 @login_required
 async def favorite_movies(
-    user_id: str,
     movie_id: str,
     request: Request,
     service: FavoritesService = Depends(get_favorite_service)
 ):
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': request.user.identity,
         'movie_id': movie_id
     }
 
@@ -60,13 +58,13 @@ async def favorite_movies(
                status_code=status.HTTP_204_NO_CONTENT)
 @login_required
 async def delete_movie_from_favorites(
-    user_id: str,
     movie_id: str,
     request: Request,
     service: FavoritesService = Depends(get_favorite_service)
 ):
+    user_id = request.user.identity
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': user_id,
         'movie_id': movie_id
     }
     movie_in_favorites = await service.exist(data)

@@ -32,14 +32,14 @@ async def get_movie_score(
              status_code=status.HTTP_201_CREATED)
 @login_required
 async def rate_movie(
-    user_id: str,
     movie_id: str,
     score: ScoreModel,
     request: Request,
     service: ScoresService = Depends(get_scores_service)
 ):
+    user_id = request.user.identity
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': user_id,
         'movie_id': movie_id,
     }
     movie_is_rated = await service.exist(data)
@@ -61,13 +61,13 @@ async def rate_movie(
                status_code=status.HTTP_200_OK)
 @login_required
 async def delete_movie_score(
-    user_id: str,
     movie_id: str,
     request: Request,
     service: ScoresService = Depends(get_scores_service)
 ):
+    user_id = request.user.identity
     data = {
-        'user_id': user_id,  # request.user.identity
+        'user_id': user_id,
         'movie_id': movie_id,
     }
     movie_is_rated = await service.exist(data)
