@@ -1,0 +1,1 @@
+docker-compose exec -it mongos1 bash -c "mongo < /scripts/router.js"

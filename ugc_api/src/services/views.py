@@ -1,31 +1,26 @@
-import uuid
+from functools import lru_cache
 
-from typing import Optional
-from datetime import datetime
-from pydantic import BaseModel
+from db.manager import DataManager, get_data_manager
+from fastapi import Depends
 
-from core.initialize import produce
-from core.logger import log
-
-
-class Stamp(BaseModel):
-    user_id: Optional[uuid.UUID] = None
-    movie_id: uuid.UUID
-    viewed_frame: int
-    duration: int
-    event_time: datetime
+from .base import BaseService
+from .mixins import CreateModelMixin, UpdateModelMixin
 
 
-async def post_stamp(stamp):
-    value_json = stamp.json().encode("utf-8")
-    await produce(value_json)
-    return value_json
+class ViewService(CreateModelMixin,
+                  UpdateModelMixin,
+                  BaseService):
+    pass
 
 
-async def get_centry():
-    try:
-        division_by_zero = 1 / 0
-    except Exception:
-        log.exception("services.views")
-        division_by_zero = 0
-    return division_by_zero
+async def data_manager():
+    return await get_data_manager(db_name='ugc_db',
+                                  collection='views',
+                                  topic='views')
+
+
+@ lru_cache()
+def get_view_service(
+        data_manager: DataManager = Depends(data_manager)
+) -> ViewService:
+    return ViewService(data_manager)
