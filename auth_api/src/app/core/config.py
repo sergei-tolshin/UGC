@@ -6,6 +6,9 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class BaseConfig(object):
     SECRET_KEY = os.getenv('SECRET_KEY', 'secret_key')
+    
+    ELK_HOST = os.getenv('ELK_HOST', '127.0.0.1')
+    ELK_PORT = int(os.getenv('ELK_PORT', 5044))
 
     DB_OPTIONS = '-c search_path=auth'
 

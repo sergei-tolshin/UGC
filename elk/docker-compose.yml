@@ -9,6 +9,7 @@ services:
           ES_HOST: "elasticsearch:9200"
         ports:
           - "5044:5044/udp"
+          - "5046:5046/udp"
         volumes:
           - ./deploy/logstash.conf:/config/logstash.conf:ro
         command: logstash -f /config/logstash.conf

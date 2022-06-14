@@ -8,7 +8,7 @@ from core.logger import LOGGING
 logging_config.dictConfig(LOGGING)
 
 # Название проекта. Используется в Swagger-документации
-PROJECT_NAME = os.getenv('PROJECT_NAME', 'movies_ugc')
+PROJECT_NAME = os.getenv('PROJECT_NAME', 'ugc_app')
 
 # Настройки Kafka
 KAFKA_HOST = os.getenv('KAFKA_HOST', '127.0.0.1')

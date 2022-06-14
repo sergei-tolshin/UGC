@@ -1,3 +1,6 @@
+import logging
+
+import logstash
 from flasgger import Swagger
 from flask import Flask
 from flask_babel import Babel
@@ -9,11 +12,15 @@ from flask_migrate import Migrate
 from flask_security import Security
 from flask_sqlalchemy import SQLAlchemy
 
-from app.core.config import DevelopmentConfig
+from app.core.config import DevelopmentConfig as config
+from app.core.filters import RequestIdFilter
 from app.core.middleware import RateLimiter
 from app.core.tracer import Tracer
 from app.db.redis import Redis
 
+logstash_handler = logstash.LogstashHandler(config.ELK_HOST,
+                                            config.ELK_PORT,
+                                            version=1)
 limiter = Limiter(key_func=get_remote_address)
 rate_limiter = RateLimiter(limit='10/second')
 tracer = Tracer(console=False)
@@ -27,9 +34,13 @@ swagger = Swagger()
 babel = Babel()
 
 
-def create_app(config_class=DevelopmentConfig):
+def create_app(config_class=config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    app.logger.name = 'auth_app'
+    app.logger.addFilter(RequestIdFilter())
+    app.logger.addHandler(logstash_handler)
 
     tracer.init_app(app)
     db.init_app(app)
@@ -43,9 +54,9 @@ def create_app(config_class=DevelopmentConfig):
     from app.core.datastore import user_datastore
     security.init_app(app, user_datastore)
 
-    from app.core.cli import create
-    from app.core import core, jwt_callback
     from app.api.urls import api
+    from app.core import core, jwt_callback
+    from app.core.cli import create
 
     app.register_blueprint(create)
     app.register_blueprint(core)
