@@ -19,7 +19,7 @@ async def data_manager():
                                   topic='views')
 
 
-@ lru_cache()
+@lru_cache()
 def get_view_service(
         data_manager: DataManager = Depends(data_manager)
 ) -> ViewService:
