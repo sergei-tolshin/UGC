@@ -9,11 +9,13 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 
 from api.v1 import favorites, reviews, scores, views
-from core import config, logger
-from core.middleware import AuthMiddleware
+from core import config
+from core import logger as logger_config
+from core.middleware import AuthMiddleware, LoggingMiddleware
 from db import kafka, message_broker, mongodb, storage
 
 sentry_sdk.init(dsn=config.SENTRY_DSN)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title='UGC API для онлайн-кинотеатра',
@@ -26,6 +28,7 @@ app = FastAPI(
 )
 
 app.add_middleware(SentryAsgiMiddleware)
+app.add_middleware(LoggingMiddleware, logger=logger)
 app.add_middleware(
     AuthMiddleware,
     secret_key=config.JWT_SECRET_KEY,
@@ -67,6 +70,6 @@ if __name__ == '__main__':
         'main:app',
         host='0.0.0.0',
         port=8000,
-        log_config=logger.LOGGING,
+        log_config=logger_config.LOGGING,
         log_level=logging.DEBUG,
     )

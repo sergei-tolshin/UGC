@@ -4,14 +4,16 @@ from typing import List, Tuple
 
 import grpc
 from aiobreaker import CircuitBreaker
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.requests import HTTPConnection
 from fastapi.responses import JSONResponse
 from jose import ExpiredSignatureError, JWTError, jwt
 from starlette.authentication import (AuthCredentials, AuthenticationBackend,
                                       BaseUser, UnauthenticatedUser)
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import Receive, Scope, Send
 
+from core import config
 from core.auth.user_pb2 import UserInfoRequest
 from core.auth.user_pb2_grpc import UserStub
 
@@ -176,4 +178,22 @@ class AuthBackend(AuthenticationBackend):
         stub = UserStub(self.auth_channel)
         response = await stub.GetInfo(UserInfoRequest(id=id))
         logging.info(response)
+        return response
+
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app: FastAPI, logger):
+        super().__init__(app)
+        self.logger = logger
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        request_id = request.headers.get('X-Request-Id')
+        logger = logging.LoggerAdapter(
+            self.logger, extra={
+                'tag': config.PROJECT_NAME,
+                'request_id': request_id
+            }
+        )
+        logger.info(request)
         return response
